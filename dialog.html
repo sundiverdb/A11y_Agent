@@ -20,6 +20,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 24px;
     }
 
     /* Backdrop behind dialog */
@@ -28,8 +29,10 @@
       inset: 0;
       background: rgba(0, 0, 0, 0.55);
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
+      padding: 40px 16px;
+      overflow-y: auto;
     }
 
     /* Dialog container */
@@ -37,7 +40,7 @@
       background: #ffffff;
       border-radius: 12px;
       width: 100%;
-      max-width: 480px;
+      max-width: 560px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
       overflow: hidden;
     }
@@ -65,13 +68,58 @@
     /* Body */
     .dialog-body {
       padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .dialog-description {
       font-size: 0.875rem;
       color: #4b5563;
-      margin-bottom: 20px;
       line-height: 1.5;
+    }
+
+    /* URL input group */
+    .url-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .url-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .url-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 7px;
+      font-size: 0.9375rem;
+      color: #111827;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .url-input:focus {
+      outline: none;
+      border-color: #1a56db;
+      box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.2);
+    }
+
+    .url-input[aria-invalid="true"] {
+      border-color: #dc2626;
+    }
+
+    .url-error {
+      font-size: 0.8125rem;
+      color: #dc2626;
+      display: none;
+    }
+
+    .url-error[aria-hidden="false"] {
+      display: block;
     }
 
     /* Checkbox group */
@@ -212,6 +260,114 @@
       box-shadow: none;
     }
 
+    /* Results section */
+    .results-section {
+      border-top: 1px solid #e5e7eb;
+      padding: 20px 24px 24px;
+    }
+
+    .results-section[hidden] {
+      display: none;
+    }
+
+    .results-heading {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .results-url {
+      font-size: 0.8125rem;
+      color: #4b5563;
+      margin-bottom: 14px;
+      word-break: break-all;
+    }
+
+    .results-url strong {
+      color: #111827;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .result-card {
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .result-card__count {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .result-card__label {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .result-card--error {
+      background: #fef2f2;
+    }
+    .result-card--error .result-card__count { color: #dc2626; }
+    .result-card--error .result-card__label { color: #b91c1c; }
+
+    .result-card--contrast {
+      background: #fff7ed;
+    }
+    .result-card--contrast .result-card__count { color: #ea580c; }
+    .result-card--contrast .result-card__label { color: #c2410c; }
+
+    .result-card--alert {
+      background: #fefce8;
+    }
+    .result-card--alert .result-card__count { color: #ca8a04; }
+    .result-card--alert .result-card__label { color: #a16207; }
+
+    .result-card--feature {
+      background: #f0fdf4;
+    }
+    .result-card--feature .result-card__count { color: #16a34a; }
+    .result-card--feature .result-card__label { color: #15803d; }
+
+    .result-card--structure {
+      background: #eff6ff;
+    }
+    .result-card--structure .result-card__count { color: #2563eb; }
+    .result-card--structure .result-card__label { color: #1d4ed8; }
+
+    .result-card--aria {
+      background: #faf5ff;
+    }
+    .result-card--aria .result-card__count { color: #9333ea; }
+    .result-card--aria .result-card__label { color: #7e22ce; }
+
+    .results-credits {
+      font-size: 0.8125rem;
+      color: #6b7280;
+      text-align: right;
+    }
+
+    .results-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.875rem;
+      color: #b91c1c;
+    }
+
     /* Live region for status announcements */
     .sr-only {
       position: absolute;
@@ -258,9 +414,26 @@
       <!-- Body -->
       <div class="dialog-body">
         <p class="dialog-description" id="dialog-desc">
-          Select one or more accessibility checks to run against the target page.
-          Results will be generated after you click <strong>Run Checks</strong>.
+          Enter the URL of the page to audit, select one or more checks, then click
+          <strong>Run Checks</strong>. Results appear below via the WAVE API.
         </p>
+
+        <!-- URL input -->
+        <div class="url-group">
+          <label class="url-label" for="url-input">Page URL to audit</label>
+          <input
+            type="url"
+            id="url-input"
+            class="url-input"
+            placeholder="https://example.com"
+            autocomplete="url"
+            aria-describedby="url-error"
+            aria-required="true"
+          />
+          <span id="url-error" class="url-error" role="alert" aria-hidden="true">
+            Please enter a valid URL starting with https:// or http://
+          </span>
+        </div>
 
         <fieldset>
           <legend>Accessibility Tests</legend>
@@ -313,6 +486,12 @@
         <button type="button" class="btn btn-primary" id="btn-run">Run Checks</button>
       </div>
 
+      <!-- Results -->
+      <section class="results-section" id="results-section" aria-labelledby="results-heading" hidden>
+        <h2 class="results-heading" id="results-heading">Results</h2>
+        <div id="results-content"></div>
+      </section>
+
     </div>
   </div>
 
@@ -324,6 +503,12 @@
     const runBtn = document.getElementById('btn-run');
     const cancelBtn = document.getElementById('btn-cancel');
     const status = document.getElementById('status');
+    const urlInput = document.getElementById('url-input');
+    const urlError = document.getElementById('url-error');
+    const resultsSection = document.getElementById('results-section');
+    const resultsContent = document.getElementById('results-content');
+
+    const PROXY_URL = 'http://127.0.0.1:5000/check';
 
     // Keep Run button disabled when nothing is selected
     function updateRunButton() {
@@ -334,21 +519,110 @@
     checkboxes.forEach(cb => cb.addEventListener('change', updateRunButton));
     updateRunButton();
 
-    runBtn.addEventListener('click', () => {
+    function validateUrl(value) {
+      try {
+        const u = new URL(value);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    }
+
+    function setUrlValid(valid) {
+      urlInput.setAttribute('aria-invalid', valid ? 'false' : 'true');
+      urlError.setAttribute('aria-hidden', valid ? 'true' : 'false');
+    }
+
+    urlInput.addEventListener('input', () => {
+      if (urlInput.value) setUrlValid(validateUrl(urlInput.value));
+    });
+
+    function renderResults(data) {
+      if (!data.status || !data.status.success) {
+        resultsContent.innerHTML = `
+          <p class="results-error">
+            WAVE API error: ${data.status?.error || 'Unknown error'}
+          </p>`;
+        return;
+      }
+
+      const cats = data.categories;
+      const stats = data.statistics;
+
+      const cards = [
+        { key: 'error',     cls: 'error',     label: 'Errors' },
+        { key: 'contrast',  cls: 'contrast',  label: 'Contrast' },
+        { key: 'alert',     cls: 'alert',     label: 'Alerts' },
+        { key: 'feature',   cls: 'feature',   label: 'Features' },
+        { key: 'structure', cls: 'structure', label: 'Structure' },
+        { key: 'aria',      cls: 'aria',      label: 'ARIA' },
+      ];
+
+      const grid = cards.map(({ key, cls, label }) => {
+        const count = cats[key]?.count ?? 0;
+        return `
+          <div class="result-card result-card--${cls}" role="group" aria-label="${label}: ${count}">
+            <div class="result-card__count" aria-hidden="true">${count}</div>
+            <div class="result-card__label" aria-hidden="true">${label}</div>
+          </div>`;
+      }).join('');
+
+      resultsContent.innerHTML = `
+        <p class="results-url">
+          <strong>Scanned:</strong> ${escHtml(stats.pageurl)}
+        </p>
+        <div class="results-grid" role="list" aria-label="Issue counts by category">
+          ${grid}
+        </div>
+        <p class="results-credits">${stats.creditsremaining} API credit${stats.creditsremaining !== 1 ? 's' : ''} remaining</p>`;
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    runBtn.addEventListener('click', async () => {
+      const targetUrl = urlInput.value.trim();
+
+      if (!validateUrl(targetUrl)) {
+        setUrlValid(false);
+        urlInput.focus();
+        return;
+      }
+      setUrlValid(true);
+
       const selected = [...checkboxes]
         .filter(cb => cb.checked)
         .map(cb => cb.labels[0].firstChild.textContent.trim());
 
       status.textContent = `Running ${selected.length} check${selected.length > 1 ? 's' : ''}: ${selected.join(', ')}.`;
-      runBtn.textContent = 'Running…';
+      runBtn.textContent = 'Running\u2026';
       runBtn.disabled = true;
+      resultsSection.hidden = true;
 
-      // Simulate async work; replace with real agent call
-      setTimeout(() => {
+      try {
+        const resp = await fetch(`${PROXY_URL}?url=${encodeURIComponent(targetUrl)}`);
+        const data = await resp.json();
+
+        renderResults(data);
+        resultsSection.hidden = false;
+        status.textContent = 'Checks complete. Review results below.';
+      } catch (err) {
+        resultsContent.innerHTML = `
+          <p class="results-error">
+            Could not reach the local proxy at ${escHtml(PROXY_URL)}.<br>
+            Make sure <code>proxy.py</code> is running: <code>python proxy.py</code>
+          </p>`;
+        resultsSection.hidden = false;
+        status.textContent = 'Check failed. See error message below.';
+      } finally {
         runBtn.textContent = 'Run Checks';
         updateRunButton();
-        status.textContent = 'Checks complete. Review results below.';
-      }, 2000);
+      }
     });
 
     cancelBtn.addEventListener('click', () => {
@@ -377,8 +651,8 @@
       }
     });
 
-    // Set initial focus on first interactive element
-    focusable()[0]?.focus();
+    // Set initial focus on URL input
+    urlInput.focus();
   </script>
 
 </body>
