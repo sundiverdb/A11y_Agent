@@ -3,11 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Accessibility Checking Agent</title>
+  <title>Accessibility Audit Agent</title>
   <style>
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -23,7 +21,6 @@
       padding: 24px;
     }
 
-    /* Backdrop behind dialog */
     .dialog-backdrop {
       position: fixed;
       inset: 0;
@@ -35,12 +32,11 @@
       overflow-y: auto;
     }
 
-    /* Dialog container */
     [role="dialog"] {
       background: #ffffff;
       border-radius: 12px;
       width: 100%;
-      max-width: 560px;
+      max-width: 600px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
       overflow: hidden;
     }
@@ -55,9 +51,7 @@
       gap: 12px;
     }
 
-    .dialog-header svg {
-      flex-shrink: 0;
-    }
+    .dialog-header svg { flex-shrink: 0; }
 
     .dialog-title {
       font-size: 1.125rem;
@@ -79,18 +73,9 @@
       line-height: 1.5;
     }
 
-    /* URL input group */
-    .url-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+    .url-group { display: flex; flex-direction: column; gap: 6px; }
 
-    .url-label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #111827;
-    }
+    .url-label { font-size: 0.875rem; font-weight: 600; color: #111827; }
 
     .url-input {
       width: 100%;
@@ -108,26 +93,12 @@
       box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.2);
     }
 
-    .url-input[aria-invalid="true"] {
-      border-color: #dc2626;
-    }
+    .url-input[aria-invalid="true"] { border-color: #dc2626; }
 
-    .url-error {
-      font-size: 0.8125rem;
-      color: #dc2626;
-      display: none;
-    }
+    .url-error { font-size: 0.8125rem; color: #dc2626; display: none; }
+    .url-error[aria-hidden="false"] { display: block; }
 
-    .url-error[aria-hidden="false"] {
-      display: block;
-    }
-
-    /* Checkbox group */
-    fieldset {
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 4px 0;
-    }
+    fieldset { border: 1px solid #e5e7eb; border-radius: 8px; padding: 4px 0; }
 
     legend {
       font-size: 0.75rem;
@@ -144,21 +115,13 @@
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      border-radius: 6px;
       cursor: pointer;
       transition: background 0.15s;
     }
 
-    .check-item:hover {
-      background: #eff6ff;
-    }
+    .check-item:hover { background: #eff6ff; }
+    .check-item + .check-item { border-top: 1px solid #f3f4f6; }
 
-    /* Divider between items */
-    .check-item + .check-item {
-      border-top: 1px solid #f3f4f6;
-    }
-
-    /* Custom checkbox */
     .check-item input[type="checkbox"] {
       appearance: none;
       -webkit-appearance: none;
@@ -196,20 +159,8 @@
       outline-offset: 2px;
     }
 
-    .check-item label {
-      font-size: 0.9375rem;
-      color: #111827;
-      cursor: pointer;
-      flex: 1;
-      line-height: 1.4;
-    }
-
-    .check-item label .label-hint {
-      display: block;
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-top: 2px;
-    }
+    .check-item label { font-size: 0.9375rem; color: #111827; cursor: pointer; flex: 1; line-height: 1.4; }
+    .check-item label .label-hint { display: block; font-size: 0.75rem; color: #6b7280; margin-top: 2px; }
 
     /* Footer */
     .dialog-footer {
@@ -230,45 +181,18 @@
       transition: background 0.15s, box-shadow 0.15s;
     }
 
-    .btn:focus-visible {
-      outline: 3px solid #93c5fd;
-      outline-offset: 2px;
-    }
+    .btn:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 
-    .btn-secondary {
-      background: #f3f4f6;
-      color: #374151;
-    }
+    .btn-secondary { background: #f3f4f6; color: #374151; }
+    .btn-secondary:hover { background: #e5e7eb; }
 
-    .btn-secondary:hover {
-      background: #e5e7eb;
-    }
+    .btn-primary { background: #1a56db; color: #ffffff; }
+    .btn-primary:hover { background: #1648c0; box-shadow: 0 2px 8px rgba(26, 86, 219, 0.4); }
+    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; box-shadow: none; }
 
-    .btn-primary {
-      background: #1a56db;
-      color: #ffffff;
-    }
-
-    .btn-primary:hover {
-      background: #1648c0;
-      box-shadow: 0 2px 8px rgba(26, 86, 219, 0.4);
-    }
-
-    .btn-primary:disabled {
-      background: #93c5fd;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    /* Results section */
-    .results-section {
-      border-top: 1px solid #e5e7eb;
-      padding: 20px 24px 24px;
-    }
-
-    .results-section[hidden] {
-      display: none;
-    }
+    /* Results */
+    .results-section { border-top: 1px solid #e5e7eb; padding: 20px 24px 24px; }
+    .results-section[hidden] { display: none; }
 
     .results-heading {
       font-size: 0.875rem;
@@ -276,88 +200,127 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: #6b7280;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
-    .results-url {
+    .results-url { font-size: 0.8125rem; color: #4b5563; margin-bottom: 16px; word-break: break-all; }
+    .results-url strong { color: #111827; }
+
+    .tool-result { padding: 14px 0; border-top: 1px solid #e5e7eb; }
+    .tool-result:first-of-type { border-top: none; }
+
+    .tool-result-heading {
       font-size: 0.8125rem;
-      color: #4b5563;
-      margin-bottom: 14px;
-      word-break: break-all;
-    }
-
-    .results-url strong {
-      color: #111827;
-    }
-
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .result-card {
-      border-radius: 8px;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .result-card__count {
-      font-size: 1.5rem;
       font-weight: 700;
-      line-height: 1;
-      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #374151;
+      margin-bottom: 10px;
     }
 
-    .result-card__label {
-      font-size: 0.6875rem;
+    /* axe violation cards */
+    .violation-summary { font-size: 0.875rem; font-weight: 600; color: #b91c1c; margin-bottom: 10px; }
+
+    .results-pass {
+      font-size: 0.875rem;
       font-weight: 600;
+      color: #15803d;
+      background: #f0fdf4;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .violation-card { border-radius: 8px; padding: 12px 14px; margin-bottom: 8px; border-left: 4px solid; }
+    .violation-card--critical { background: #fef2f2; border-left-color: #dc2626; }
+    .violation-card--serious  { background: #fff7ed; border-left-color: #ea580c; }
+    .violation-card--moderate { background: #fefce8; border-left-color: #ca8a04; }
+    .violation-card--minor    { background: #f9fafb; border-left-color: #9ca3af; }
+
+    .violation-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+
+    .impact-badge {
+      font-size: 0.6875rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      padding: 2px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
     }
 
-    .result-card--error {
-      background: #fef2f2;
-    }
-    .result-card--error .result-card__count { color: #dc2626; }
-    .result-card--error .result-card__label { color: #b91c1c; }
+    .impact--critical { background: #dc2626; color: #fff; }
+    .impact--serious  { background: #ea580c; color: #fff; }
+    .impact--moderate { background: #ca8a04; color: #fff; }
+    .impact--minor    { background: #9ca3af; color: #fff; }
 
-    .result-card--contrast {
-      background: #fff7ed;
+    .violation-id {
+      font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+      font-size: 0.8125rem;
+      color: #111827;
+      flex: 1;
     }
-    .result-card--contrast .result-card__count { color: #ea580c; }
-    .result-card--contrast .result-card__label { color: #c2410c; }
 
-    .result-card--alert {
-      background: #fefce8;
-    }
-    .result-card--alert .result-card__count { color: #ca8a04; }
-    .result-card--alert .result-card__label { color: #a16207; }
+    .violation-nodes { font-size: 0.75rem; color: #6b7280; white-space: nowrap; }
 
-    .result-card--feature {
-      background: #f0fdf4;
-    }
-    .result-card--feature .result-card__count { color: #16a34a; }
-    .result-card--feature .result-card__label { color: #15803d; }
+    .violation-desc { font-size: 0.8125rem; color: #374151; line-height: 1.5; margin-bottom: 8px; }
 
-    .result-card--structure {
-      background: #eff6ff;
-    }
+    .violation-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+    .wcag-tag { font-size: 0.6875rem; font-weight: 600; padding: 2px 6px; background: #eff6ff; color: #1d4ed8; border-radius: 4px; }
+
+    .violation-link { font-size: 0.75rem; color: #1a56db; text-decoration: none; margin-left: auto; }
+    .violation-link:hover { text-decoration: underline; }
+    .violation-link:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; border-radius: 2px; }
+
+    /* Lighthouse score cards */
+    .scores-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+
+    .score-card { border-radius: 8px; padding: 14px; text-align: center; }
+
+    .score-value { font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+
+    .score-label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .score--good    { background: #f0fdf4; }
+    .score--good    .score-value { color: #16a34a; }
+    .score--good    .score-label { color: #15803d; }
+    .score--average { background: #fff7ed; }
+    .score--average .score-value { color: #ea580c; }
+    .score--average .score-label { color: #c2410c; }
+    .score--poor    { background: #fef2f2; }
+    .score--poor    .score-value { color: #dc2626; }
+    .score--poor    .score-label { color: #b91c1c; }
+
+    .failures-heading { font-size: 0.8125rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .failures-list { font-size: 0.8125rem; color: #4b5563; padding-left: 20px; line-height: 1.7; }
+
+    /* WAVE category grid */
+    .results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+
+    .result-card { border-radius: 8px; padding: 12px; text-align: center; }
+    .result-card__count { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+    .result-card__label { font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .result-card--error     { background: #fef2f2; }
+    .result-card--error     .result-card__count { color: #dc2626; }
+    .result-card--error     .result-card__label { color: #b91c1c; }
+    .result-card--contrast  { background: #fff7ed; }
+    .result-card--contrast  .result-card__count { color: #ea580c; }
+    .result-card--contrast  .result-card__label { color: #c2410c; }
+    .result-card--alert     { background: #fefce8; }
+    .result-card--alert     .result-card__count { color: #ca8a04; }
+    .result-card--alert     .result-card__label { color: #a16207; }
+    .result-card--feature   { background: #f0fdf4; }
+    .result-card--feature   .result-card__count { color: #16a34a; }
+    .result-card--feature   .result-card__label { color: #15803d; }
+    .result-card--structure { background: #eff6ff; }
     .result-card--structure .result-card__count { color: #2563eb; }
     .result-card--structure .result-card__label { color: #1d4ed8; }
+    .result-card--aria      { background: #faf5ff; }
+    .result-card--aria      .result-card__count { color: #9333ea; }
+    .result-card--aria      .result-card__label { color: #7e22ce; }
 
-    .result-card--aria {
-      background: #faf5ff;
-    }
-    .result-card--aria .result-card__count { color: #9333ea; }
-    .result-card--aria .result-card__label { color: #7e22ce; }
-
-    .results-credits {
-      font-size: 0.8125rem;
-      color: #6b7280;
-      text-align: right;
-    }
+    .results-credits { font-size: 0.8125rem; color: #6b7280; text-align: right; }
 
     .results-error {
       background: #fef2f2;
@@ -366,9 +329,11 @@
       padding: 12px 16px;
       font-size: 0.875rem;
       color: #b91c1c;
+      white-space: pre-wrap;
     }
 
-    /* Live region for status announcements */
+    .loading { font-size: 0.875rem; color: #6b7280; font-style: italic; }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -396,8 +361,7 @@
         <svg
           aria-hidden="true"
           focusable="false"
-          width="24"
-          height="24"
+          width="24" height="24"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -408,14 +372,15 @@
           <circle cx="12" cy="12" r="10"/>
           <path d="M12 8v4l3 3"/>
         </svg>
-        <h1 class="dialog-title" id="dialog-title">Accessibility Checking Agent</h1>
+        <h1 class="dialog-title" id="dialog-title">Accessibility Audit Agent</h1>
       </div>
 
       <!-- Body -->
       <div class="dialog-body">
         <p class="dialog-description" id="dialog-desc">
-          Enter the URL of the page to audit, select one or more checks, then click
-          <strong>Run Checks</strong>. Results appear below via the WAVE API.
+          Enter a URL, choose one or more audit tools, then click
+          <strong>Run Audit</strong>. The audit server
+          (<code>audit_server.py</code>) must be running on port&nbsp;5001.
         </p>
 
         <!-- URL input -->
@@ -425,7 +390,7 @@
             type="url"
             id="url-input"
             class="url-input"
-            placeholder="https://example.com"
+            placeholder="https://www.taffytown.com/"
             autocomplete="url"
             aria-describedby="url-error"
             aria-required="true"
@@ -435,46 +400,31 @@
           </span>
         </div>
 
+        <!-- Tool checkboxes -->
         <fieldset>
-          <legend>Accessibility Tests</legend>
+          <legend>Audit Tools</legend>
 
           <div class="check-item">
-            <input type="checkbox" id="chk-color-contrast" name="checks" value="color-contrast" checked />
-            <label for="chk-color-contrast">
-              Color Contrast
-              <span class="label-hint">Verifies text meets WCAG AA/AAA contrast ratios (SC 1.4.3, 1.4.6)</span>
+            <input type="checkbox" id="tool-axe" name="tools" value="axe" checked />
+            <label for="tool-axe">
+              axe-core
+              <span class="label-hint">Deep WCAG 2.1/2.2 violation scan via headless Chromium &mdash; requires Playwright</span>
             </label>
           </div>
 
           <div class="check-item">
-            <input type="checkbox" id="chk-keyboard-traps" name="checks" value="keyboard-traps" />
-            <label for="chk-keyboard-traps">
-              Keyboard Traps
-              <span class="label-hint">Ensures focus is never locked inside a component (SC 2.1.2)</span>
+            <input type="checkbox" id="tool-lighthouse" name="tools" value="lighthouse" checked />
+            <label for="tool-lighthouse">
+              Lighthouse
+              <span class="label-hint">Accessibility &amp; performance scoring &mdash; requires Node.js and the lighthouse CLI</span>
             </label>
           </div>
 
           <div class="check-item">
-            <input type="checkbox" id="chk-alt-text" name="checks" value="alt-text" />
-            <label for="chk-alt-text">
-              Alt-text for Images
-              <span class="label-hint">Checks that all &lt;img&gt; elements have meaningful alt attributes (SC 1.1.1)</span>
-            </label>
-          </div>
-
-          <div class="check-item">
-            <input type="checkbox" id="chk-desc-images" name="checks" value="desc-images" />
-            <label for="chk-desc-images">
-              Description for Images
-              <span class="label-hint">Validates long descriptions for complex images via aria-describedby (SC 1.1.1)</span>
-            </label>
-          </div>
-
-          <div class="check-item">
-            <input type="checkbox" id="chk-skip-link" name="checks" value="skip-link" />
-            <label for="chk-skip-link">
-              Skip to Content Link
-              <span class="label-hint">Confirms a visible skip-navigation link is the first focusable element (SC 2.4.1)</span>
+            <input type="checkbox" id="tool-wave" name="tools" value="wave" checked />
+            <label for="tool-wave">
+              WAVE API
+              <span class="label-hint">Visual accessibility categories from WebAIM &mdash; requires WAVE_API_KEY in a11y_agent.env</span>
             </label>
           </div>
         </fieldset>
@@ -483,49 +433,57 @@
       <!-- Footer -->
       <div class="dialog-footer">
         <button type="button" class="btn btn-secondary" id="btn-cancel">Cancel</button>
-        <button type="button" class="btn btn-primary" id="btn-run">Run Checks</button>
+        <button type="button" class="btn btn-primary" id="btn-run">Run Audit</button>
       </div>
 
       <!-- Results -->
       <section class="results-section" id="results-section" aria-labelledby="results-heading" hidden>
         <h2 class="results-heading" id="results-heading">Results</h2>
-        <div id="results-content"></div>
+        <p class="results-url"><strong>Scanned:</strong> <span id="results-url-display"></span></p>
+
+        <div id="results-axe" class="tool-result" hidden>
+          <h3 class="tool-result-heading">axe-core</h3>
+          <div id="results-axe-content"></div>
+        </div>
+
+        <div id="results-lighthouse" class="tool-result" hidden>
+          <h3 class="tool-result-heading">Lighthouse</h3>
+          <div id="results-lighthouse-content"></div>
+        </div>
+
+        <div id="results-wave" class="tool-result" hidden>
+          <h3 class="tool-result-heading">WAVE</h3>
+          <div id="results-wave-content"></div>
+        </div>
       </section>
 
     </div>
   </div>
 
-  <!-- Live region: screen readers announce status changes -->
   <div aria-live="polite" aria-atomic="true" class="sr-only" id="status"></div>
 
   <script>
-    const checkboxes = document.querySelectorAll('input[name="checks"]');
-    const runBtn = document.getElementById('btn-run');
+    const AUDIT_URL = 'http://127.0.0.1:5001/audit';
+
+    const toolCheckboxes = document.querySelectorAll('input[name="tools"]');
+    const runBtn    = document.getElementById('btn-run');
     const cancelBtn = document.getElementById('btn-cancel');
-    const status = document.getElementById('status');
-    const urlInput = document.getElementById('url-input');
-    const urlError = document.getElementById('url-error');
+    const status    = document.getElementById('status');
+    const urlInput  = document.getElementById('url-input');
+    const urlError  = document.getElementById('url-error');
     const resultsSection = document.getElementById('results-section');
-    const resultsContent = document.getElementById('results-content');
 
-    const PROXY_URL = 'http://127.0.0.1:5000/check';
-
-    // Keep Run button disabled when nothing is selected
-    function updateRunButton() {
-      const anyChecked = [...checkboxes].some(cb => cb.checked);
-      runBtn.disabled = !anyChecked;
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
-
-    checkboxes.forEach(cb => cb.addEventListener('change', updateRunButton));
-    updateRunButton();
 
     function validateUrl(value) {
       try {
         const u = new URL(value);
         return u.protocol === 'http:' || u.protocol === 'https:';
-      } catch {
-        return false;
-      }
+      } catch { return false; }
     }
 
     function setUrlValid(valid) {
@@ -533,22 +491,104 @@
       urlError.setAttribute('aria-hidden', valid ? 'true' : 'false');
     }
 
+    // Convert axe tag "wcag143" -> "SC 1.4.3"
+    function extractWcagSCs(tags) {
+      return (tags || [])
+        .filter(t => /^wcag\d{3}/.test(t))
+        .map(t => {
+          const d = t.replace('wcag', '');
+          return `SC ${d[0]}.${d[1]}.${d[2]}`;
+        });
+    }
+
+    function updateRunButton() {
+      runBtn.disabled = ![...toolCheckboxes].some(cb => cb.checked);
+    }
+
+    toolCheckboxes.forEach(cb => cb.addEventListener('change', updateRunButton));
+    updateRunButton();
+
     urlInput.addEventListener('input', () => {
       if (urlInput.value) setUrlValid(validateUrl(urlInput.value));
     });
 
-    function renderResults(data) {
-      if (!data.status || !data.status.success) {
-        resultsContent.innerHTML = `
-          <p class="results-error">
-            WAVE API error: ${data.status?.error || 'Unknown error'}
-          </p>`;
+    /* ── Result renderers ─────────────────────────────────────────────────── */
+
+    function renderAxe(data) {
+      const el = document.getElementById('results-axe-content');
+      if (data.error) {
+        el.innerHTML = `<p class="results-error">${escHtml(data.error)}</p>`;
         return;
       }
+      const count = data.violation_count;
+      if (count === 0) {
+        el.innerHTML = `<p class="results-pass">&#10003; No violations &mdash; ${data.passes} rule${data.passes !== 1 ? 's' : ''} passed</p>`;
+        return;
+      }
+      const order = ['critical', 'serious', 'moderate', 'minor'];
+      const sorted = [...(data.violations || [])].sort(
+        (a, b) => order.indexOf(a.impact) - order.indexOf(b.impact)
+      );
+      const cards = sorted.map(v => {
+        const scs    = extractWcagSCs(v.tags);
+        const badges = scs.map(sc => `<span class="wcag-tag">${escHtml(sc)}</span>`).join('');
+        const impact = v.impact || 'minor';
+        return `
+          <div class="violation-card violation-card--${impact}">
+            <div class="violation-header">
+              <span class="impact-badge impact--${impact}">${escHtml(impact)}</span>
+              <code class="violation-id">${escHtml(v.id)}</code>
+              <span class="violation-nodes">${v.nodes} element${v.nodes !== 1 ? 's' : ''}</span>
+            </div>
+            <p class="violation-desc">${escHtml(v.description)}</p>
+            <div class="violation-footer">
+              ${badges}
+              ${v.help_url ? `<a class="violation-link" href="${escHtml(v.help_url)}" target="_blank" rel="noopener noreferrer">Learn more &#8599;</a>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+      el.innerHTML = `<p class="violation-summary">${count} violation${count !== 1 ? 's' : ''} found</p>${cards}`;
+    }
 
-      const cats = data.categories;
+    function renderLighthouse(data) {
+      const el = document.getElementById('results-lighthouse-content');
+      if (data.error) {
+        el.innerHTML = `<p class="results-error">${escHtml(data.error)}</p>`;
+        return;
+      }
+      const scoreClass = s => s >= 90 ? 'good' : s >= 50 ? 'average' : 'poor';
+      const names = { performance: 'Performance', accessibility: 'Accessibility', 'best-practices': 'Best Practices', seo: 'SEO' };
+      const cards = Object.entries(data.scores || {})
+        .filter(([, s]) => s !== null)
+        .map(([key, score]) => {
+          const label = names[key] || key;
+          return `
+            <div class="score-card score--${scoreClass(score)}" role="group" aria-label="${label}: ${score} out of 100">
+              <div class="score-value" aria-hidden="true">${score}</div>
+              <div class="score-label" aria-hidden="true">${label}</div>
+            </div>`;
+        }).join('');
+      const failures = data.accessibility_failures || [];
+      const failList = failures.length ? `
+        <p class="failures-heading">Failed accessibility audits</p>
+        <ul class="failures-list">
+          ${failures.map(f => `<li><strong>${escHtml(f.title)}</strong>${f.description ? ` &mdash; ${escHtml(f.description)}` : ''}</li>`).join('')}
+        </ul>` : '';
+      el.innerHTML = `<div class="scores-grid">${cards}</div>${failList}`;
+    }
+
+    function renderWave(data) {
+      const el = document.getElementById('results-wave-content');
+      if (data.error) {
+        el.innerHTML = `<p class="results-error">${escHtml(data.error)}</p>`;
+        return;
+      }
+      if (!data.status || !data.status.success) {
+        el.innerHTML = `<p class="results-error">WAVE API error: ${escHtml(data.status?.error || 'Unknown error')}</p>`;
+        return;
+      }
+      const cats  = data.categories;
       const stats = data.statistics;
-
       const cards = [
         { key: 'error',     cls: 'error',     label: 'Errors' },
         { key: 'contrast',  cls: 'contrast',  label: 'Contrast' },
@@ -556,9 +596,7 @@
         { key: 'feature',   cls: 'feature',   label: 'Features' },
         { key: 'structure', cls: 'structure', label: 'Structure' },
         { key: 'aria',      cls: 'aria',      label: 'ARIA' },
-      ];
-
-      const grid = cards.map(({ key, cls, label }) => {
+      ].map(({ key, cls, label }) => {
         const count = cats[key]?.count ?? 0;
         return `
           <div class="result-card result-card--${cls}" role="group" aria-label="${label}: ${count}">
@@ -566,28 +604,15 @@
             <div class="result-card__label" aria-hidden="true">${label}</div>
           </div>`;
       }).join('');
-
-      resultsContent.innerHTML = `
-        <p class="results-url">
-          <strong>Scanned:</strong> ${escHtml(stats.pageurl)}
-        </p>
-        <div class="results-grid" role="list" aria-label="Issue counts by category">
-          ${grid}
-        </div>
+      el.innerHTML = `
+        <div class="results-grid" role="list" aria-label="Issue counts by category">${cards}</div>
         <p class="results-credits">${stats.creditsremaining} API credit${stats.creditsremaining !== 1 ? 's' : ''} remaining</p>`;
     }
 
-    function escHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
+    /* ── Run handler ──────────────────────────────────────────────────────── */
 
     runBtn.addEventListener('click', async () => {
       const targetUrl = urlInput.value.trim();
-
       if (!validateUrl(targetUrl)) {
         setUrlValid(false);
         urlInput.focus();
@@ -595,63 +620,69 @@
       }
       setUrlValid(true);
 
-      const selected = [...checkboxes]
-        .filter(cb => cb.checked)
-        .map(cb => cb.labels[0].firstChild.textContent.trim());
+      const selectedTools = [...toolCheckboxes].filter(cb => cb.checked).map(cb => cb.value);
 
-      status.textContent = `Running ${selected.length} check${selected.length > 1 ? 's' : ''}: ${selected.join(', ')}.`;
-      runBtn.textContent = 'Running\u2026';
-      runBtn.disabled = true;
-      resultsSection.hidden = true;
+      document.getElementById('results-url-display').textContent = targetUrl;
+
+      ['axe', 'lighthouse', 'wave'].forEach(tool => {
+        const section = document.getElementById(`results-${tool}`);
+        const content = document.getElementById(`results-${tool}-content`);
+        section.hidden = !selectedTools.includes(tool);
+        content.innerHTML = '<p class="loading">Running…</p>';
+      });
+
+      resultsSection.hidden = false;
+      runBtn.textContent    = 'Running…';
+      runBtn.disabled       = true;
+      status.textContent    = `Running ${selectedTools.join(', ')} audit on ${targetUrl}`;
 
       try {
-        const resp = await fetch(`${PROXY_URL}?url=${encodeURIComponent(targetUrl)}`);
+        const resp = await fetch(AUDIT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: targetUrl, tools: selectedTools }),
+        });
         const data = await resp.json();
 
-        renderResults(data);
-        resultsSection.hidden = false;
-        status.textContent = 'Checks complete. Review results below.';
-      } catch (err) {
-        resultsContent.innerHTML = `
-          <p class="results-error">
-            Could not reach the local proxy at ${escHtml(PROXY_URL)}.<br>
-            Make sure <code>proxy.py</code> is running: <code>python proxy.py</code>
-          </p>`;
-        resultsSection.hidden = false;
-        status.textContent = 'Check failed. See error message below.';
+        if (selectedTools.includes('axe')        && data.axe)        renderAxe(data.axe);
+        if (selectedTools.includes('lighthouse') && data.lighthouse) renderLighthouse(data.lighthouse);
+        if (selectedTools.includes('wave')       && data.wave)        renderWave(data.wave);
+
+        status.textContent = 'Audit complete. Review results below.';
+      } catch {
+        selectedTools.forEach(tool => {
+          document.getElementById(`results-${tool}-content`).innerHTML =
+            `<p class="results-error">Could not reach audit server at ${escHtml(AUDIT_URL)}.\nMake sure audit_server.py is running: python audit_server.py</p>`;
+        });
+        status.textContent = 'Audit failed. See error messages below.';
       } finally {
-        runBtn.textContent = 'Run Checks';
+        runBtn.textContent = 'Run Audit';
         updateRunButton();
       }
     });
 
-    cancelBtn.addEventListener('click', () => {
-      status.textContent = 'Dialog cancelled.';
-    });
+    cancelBtn.addEventListener('click', () => { status.textContent = 'Audit cancelled.'; });
 
-    // Trap focus inside dialog
+    /* ── Focus trap ───────────────────────────────────────────────────────── */
+
     const dialog = document.querySelector('[role="dialog"]');
+
     const focusable = () =>
-      [...dialog.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])')].filter(
+      [...dialog.querySelectorAll('button, input, a[href], [tabindex]:not([tabindex="-1"])')].filter(
         el => !el.disabled
       );
 
     dialog.addEventListener('keydown', e => {
       if (e.key !== 'Tab') return;
       const els = focusable();
-      const first = els[0];
-      const last = els[els.length - 1];
-
+      const first = els[0], last = els[els.length - 1];
       if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
+        e.preventDefault(); last.focus();
       } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
+        e.preventDefault(); first.focus();
       }
     });
 
-    // Set initial focus on URL input
     urlInput.focus();
   </script>
 
