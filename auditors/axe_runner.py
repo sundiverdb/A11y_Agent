@@ -27,7 +27,8 @@ def run_axe(url: str) -> dict[str, Any]:
             browser = p.chromium.launch(headless=True)
             try:
                 page = browser.new_page()
-                page.goto(url, wait_until="networkidle", timeout=30_000)
+                page.goto(url, wait_until="domcontentloaded", timeout=30_000)
+                page.wait_for_timeout(2000)  # let JS render after DOM load
                 page.add_script_tag(url=AXE_CDN)
                 page.wait_for_function("typeof axe !== 'undefined'", timeout=10_000)
                 raw = page.evaluate("() => axe.run()")
