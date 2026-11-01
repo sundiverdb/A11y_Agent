@@ -5,11 +5,20 @@ from __future__ import annotations
 
 import json
 import os
+import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+# Mac Python (from python.org) ships without system SSL certs.
+# Use certifi's bundle if available, otherwise fall back to default context.
+try:
+    import certifi
+    _SSL_CTX: ssl.SSLContext | None = ssl.create_default_context(cafile=certifi.where())
+except ImportError:
+    _SSL_CTX = None
 
 WAVE_ENDPOINT = "https://wave.webaim.org/api/request"
 
@@ -47,7 +56,7 @@ def run_wave(url: str) -> dict[str, Any]:
     wave_url = f"{WAVE_ENDPOINT}?{query}"
 
     try:
-        with urllib.request.urlopen(wave_url, timeout=30) as resp:
+        with urllib.request.urlopen(wave_url, timeout=30, context=_SSL_CTX) as resp:
             return json.loads(resp.read())
     except urllib.error.HTTPError as exc:
         return {"error": f"WAVE API HTTP {exc.code}: {exc.reason}"}
