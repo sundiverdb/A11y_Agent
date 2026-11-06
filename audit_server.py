@@ -16,6 +16,8 @@ import json
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+from origins import origin_allowed  # noqa: E402
+
 HOST = "127.0.0.1"
 PORT = 5001
 
@@ -32,6 +34,9 @@ class AuditHandler(BaseHTTPRequestHandler):
             self._respond(404, {"error": "Use POST /audit"})
 
     def do_POST(self) -> None:  # noqa: N802
+        if not origin_allowed(self.headers.get("Origin")):
+            self._respond(403, {"error": "Requests from this website are not allowed."})
+            return
         if self.path != "/audit":
             self._respond(404, {"error": "Not found. Use POST /audit"})
             return
@@ -73,7 +78,10 @@ class AuditHandler(BaseHTTPRequestHandler):
 
     def _send_cors(self, code: int) -> None:
         self.send_response(code)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self.headers.get("Origin")
+        if origin and origin_allowed(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
