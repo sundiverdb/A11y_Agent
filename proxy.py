@@ -20,6 +20,8 @@ from pathlib import Path
 
 
 WAVE_API_ENDPOINT = "https://wave.webaim.org/api/request"
+from origins import origin_allowed  # noqa: E402
+
 HOST = "127.0.0.1"
 PORT = 5000
 
@@ -52,6 +54,9 @@ class ProxyHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self) -> None:  # noqa: N802
+        if not origin_allowed(self.headers.get("Origin")):
+            self._respond(403, {"error": "Requests from this website are not allowed."})
+            return
         parsed = urllib.parse.urlparse(self.path)
 
         if parsed.path != "/check":
@@ -91,8 +96,10 @@ class ProxyHandler(BaseHTTPRequestHandler):
 
     def _send_cors(self, code: int) -> None:
         self.send_response(code)
-        # Allow both file:// (origin "null") and localhost origins
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self.headers.get("Origin")
+        if origin and origin_allowed(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
 

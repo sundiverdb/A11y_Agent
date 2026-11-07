@@ -110,7 +110,7 @@ A minimal, zero-dependency local HTTP server that proxies WAVE API requests, add
 - Reads `WAVE_API_KEY` from `a11y_agent.env` (falls back to `WAVE_API_KEY` env var)
 - Appends `reporttype=2` to all WAVE API requests (returns structured JSON)
 - 30-second timeout on outbound WAVE requests
-- CORS: `Access-Control-Allow-Origin: *` (permits `file://` and all localhost origins)
+- CORS: permits `file://` and localhost origins only
 
 **Dependencies:** Python 3 stdlib only (`http.server`, `urllib`, `json`, `pathlib`).
 
@@ -123,12 +123,7 @@ python proxy.py
 
 ### `a11y_agent.env` — Environment Variables
 
-> **Security Warning:** This file is currently committed to the git repository, which means `WAVE_API_KEY` is in version history. When rotating the key, remove this file from tracking:
-> ```bash
-> git rm --cached a11y_agent.env
-> echo "a11y_agent.env" >> .gitignore
-> ```
-> Going forward, populate secrets via shell environment variables or a `.env` file that is properly gitignored.
+> **Security Warning:** This file is gitignored and no longer tracked, but an earlier `WAVE_API_KEY` remains in git history. Copy `.env.example` to create it locally.
 
 | Variable | Required | Description |
 |---|---|---|
@@ -249,6 +244,15 @@ The WAVE API is used as the primary accessibility scanner:
 
 **Planned evolution:** When the LLM backend is added, raw WAVE output will be normalized into a shared `Finding` schema before being processed by Claude.
 
+### MCP Server and Batch Audits
+
+- `mcp_server.py` exposes the auditors over stdio. `batch.py` holds the batch engine, so it can be tested without MCP. Setup is in `README.md`.
+- Batch audits run on a background thread because MCP calls can time out. Results append to `~/.a11y_agent/runs/<run_id>/results.jsonl`, which makes runs resumable. Override the folder with `A11Y_AGENT_RUNS`.
+- WAVE and Lighthouse are sampled per template by default because WAVE uses paid credits.
+- `pages.csv` and `issues.csv` escape cells that could run as spreadsheet formulas, because page titles are untrusted.
+- `AXE_SCRIPT_PATH` loads a local copy of axe-core in place of the CDN copy.
+- `audit_server.py` and `proxy.py` accept browser requests only from `file://` pages and localhost.
+
 ### LLM Integration (Planned)
 
 - Will use the **Anthropic Claude API** via the `anthropic` Python SDK
@@ -303,12 +307,7 @@ black --check src/ tests/
 ### Rotating the WAVE API Key
 
 ```bash
-# Remove the env file from git tracking (one-time)
-git rm --cached a11y_agent.env
-echo "a11y_agent.env" >> .gitignore
-git commit -m "chore: stop tracking a11y_agent.env secrets file"
-
-# Update the key locally
+# Update the key locally. The file is gitignored.
 echo "WAVE_API_KEY=<new-key>" > a11y_agent.env
 ```
 
@@ -326,8 +325,8 @@ echo "WAVE_API_KEY=<new-key>" > a11y_agent.env
 8. **Branch discipline.** Develop on the designated feature branch. Never push to `main` directly.
 9. **Structured outputs preferred.** When the agent needs to return data, use tool use or JSON mode — avoid free-text parsing.
 10. **Document decisions.** If you make a non-obvious architectural choice, add a brief note under "Architecture Decisions" above.
-11. **No package yet.** There is no `pyproject.toml`, `requirements.txt`, or Python package structure. Any new Python code currently runs as standalone scripts using the stdlib. When adding the first non-stdlib dependency, create `pyproject.toml` and document it here.
-12. **Security debt.** `a11y_agent.env` is currently tracked in git. Do not add more secrets to any tracked file. Remind users to rotate the WAVE API key if they see it committed.
+11. **No package yet.** There is no `pyproject.toml` or Python package structure. Dependencies are listed in `requirements.txt`.
+12. **Security debt.** `a11y_agent.env` is no longer tracked, but its old key remains in git history. Never add secrets to a tracked file; copy `.env.example` to `a11y_agent.env` locally.
 
 ---
 
