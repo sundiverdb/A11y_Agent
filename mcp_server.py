@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from mcp.server.mcpserver import MCPServer  # noqa: E402
 
+import act  # noqa: E402
 from batch import (  # noqa: E402
     BatchManager, default_runners, expand_sitemap, validate_tools, validate_url,
 )
@@ -26,7 +27,10 @@ server = MCPServer(
         "one page. For many pages use start_batch_audit, then poll get_batch_status and read "
         "get_batch_report. WAVE uses paid credits, so keep its per-template sampling unless "
         "the user asks otherwise. Automated results cover only part of WCAG: never present a "
-        "clean result as conformance."
+        "clean result as conformance. For the checks automation misses, use list_access_topics "
+        "and get_access_consideration (Microsoft's Accessibility Considerations Toolkit) to plan "
+        "manual and assistive-technology checks; follow the safeguards they return, and report "
+        "anything resting on an unverified assumption as a manual check, not a finding."
     ),
 )
 manager = BatchManager()
@@ -93,6 +97,37 @@ def resume_batch_audit(run_id: str, delay_seconds: float | None = None) -> dict[
 def list_batch_audits() -> list[dict[str, Any]]:
     """List saved batch runs and their progress."""
     return manager.list()
+
+
+@server.tool()
+def list_access_topics() -> list[dict[str, str]]:
+    """List the access topics in Microsoft's Accessibility Considerations Toolkit.
+
+    Topics follow EN 301 549 functional performance statements (e.g. keyboard-interaction,
+    nonvisual-access, visual-adaptation). Pass an alias to get_access_consideration.
+    """
+    return act.list_topics()
+
+
+@server.tool()
+def get_access_consideration(alias: str) -> str:
+    """Return one toolkit topic: checklist, assistive-tech models, exploration strategies and
+    interaction contexts, with shared guidance merged in and the required safeguards and notices.
+    """
+    return act.topic_context(alias)
+
+
+@server.tool()
+def get_evaluation_guide(name: str | None = None) -> str | list[str]:
+    """Return a toolkit methodology or heuristics document, such as
+    'heuristics/severity' or 'methodology/confidence-gate'. With no name, list the documents."""
+    return act.guide(name) if name else act.list_guides()
+
+
+@server.tool()
+def get_wcag_criterion(number: str) -> str:
+    """Return the text of one WCAG 2.2 success criterion, e.g. '2.4.11', to annotate a finding."""
+    return act.wcag_criterion(number)
 
 
 if __name__ == "__main__":

@@ -41,8 +41,20 @@ Add this to your MCP client's settings. In the Claude desktop app that file is `
 | `stop_batch_audit` | Stops after the current page |
 | `resume_batch_audit` | Continues a run, skipping saved pages |
 | `list_batch_audits` | Lists saved runs |
+| `list_access_topics` | Lists the access topics from Microsoft's Accessibility Considerations Toolkit |
+| `get_access_consideration` | Returns one topic's checklist, assistive-tech models and test strategies, with required safeguards |
+| `get_evaluation_guide` | Returns a methodology or heuristics document, such as the severity scale |
+| `get_wcag_criterion` | Returns one WCAG 2.2 success criterion's text, for annotating findings |
 
 Results are saved in `~/.a11y_agent/runs/<run_id>/`. Import the CSV files into Google Sheets or Excel.
+
+## Accessibility Considerations Toolkit
+
+The four toolkit tools cover what axe, WAVE and Lighthouse can't: keyboard, screen reader, zoom,
+voice and cognitive checks, organized by EN 301 549. They read a pinned copy of
+[Microsoft's toolkit](https://github.com/microsoft/Microsoft-Accessibility/tree/main/Accessibility-Considerations-Toolkit)
+in `vendor/ms-act/`, so they work offline and don't change unless you update the copy.
+See `vendor/ms-act/VENDORED.md` for the pinned commit, licenses and update steps.
 
 ## Batch behavior
 
