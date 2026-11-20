@@ -386,6 +386,37 @@
 
     .loading { font-size: 0.875rem; color: #6b7280; font-style: italic; }
 
+    /* ── Whole-site mode ─────────────────────────── */
+    .check-item input[type="radio"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #6b7280;
+      border-radius: 50%;
+      flex-shrink: 0;
+      cursor: pointer;
+      background: #fff;
+    }
+    .check-item input[type="radio"]:checked { border: 6px solid #c43f00; }
+    .check-item input[type="radio"]:focus-visible { outline: 3px solid rgba(255, 85, 0, 0.5); outline-offset: 2px; }
+    fieldset[hidden], .url-hint[hidden], #results-site[hidden] { display: none; }
+    .url-hint { font-size: 0.8125rem; color: #4b5563; line-height: 1.4; }
+    .site-progress-text { font-size: 0.875rem; color: #111827; margin-bottom: 6px; }
+    .site-progress { width: 100%; height: 10px; accent-color: #c43f00; margin-bottom: 12px; }
+    .site-warning {
+      background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px;
+      padding: 10px 14px; font-size: 0.8125rem; color: #9a3412; margin-bottom: 12px;
+    }
+    .site-summary { font-size: 0.875rem; color: #111827; margin: 8px 0 12px; line-height: 1.5; }
+    .site-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; margin-bottom: 16px; }
+    .site-table caption { text-align: left; font-weight: 600; color: #111827; padding: 4px 0 6px; }
+    .site-table th, .site-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
+    .site-table th { background: #f9fafb; color: #374151; font-weight: 600; }
+    .site-table td.num, .site-table th.num { text-align: right; }
+    .site-files { font-size: 0.8125rem; color: #4b5563; line-height: 1.6; word-break: break-all; }
+    .site-note { font-size: 0.75rem; color: #4b5563; margin-top: 8px; }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -517,22 +548,44 @@
       <!-- Body -->
       <div class="dialog-body">
         <p class="dialog-description" id="dialog-desc">
-          Enter a URL, choose one or more audit tools, then click
-          <strong>Run Audit</strong>. The audit server
+          Choose one page or a whole site, enter the address, pick the tools, then select
+          <strong>Audit page</strong> or <strong>Audit site</strong>. The audit server
           (<code>audit_server.py</code>) must be running on port&nbsp;5001.
         </p>
 
+        <fieldset id="mode-group">
+          <legend>What to audit</legend>
+          <div class="check-item">
+            <input type="radio" id="mode-page" name="mode" value="page" checked />
+            <label for="mode-page">
+              One page
+              <span class="label-hint">Checks the single address you enter.</span>
+            </label>
+          </div>
+          <div class="check-item">
+            <input type="radio" id="mode-site" name="mode" value="site" />
+            <label for="mode-site">
+              A whole site
+              <span class="label-hint">Reads the site&rsquo;s sitemap and checks every page it lists.</span>
+            </label>
+          </div>
+        </fieldset>
+
         <div class="url-group">
-          <label class="url-label" for="url-input">Page URL to audit</label>
+          <label class="url-label" id="url-label" for="url-input">Page URL to audit</label>
           <input
             type="url"
             id="url-input"
             class="url-input"
-            placeholder="https://www.taffytown.com/"
+            placeholder="https://www.example.com/"
             autocomplete="url"
-            aria-describedby="url-error"
+            aria-describedby="url-hint url-error"
             aria-required="true"
           />
+          <span id="url-hint" class="url-hint" hidden>
+            Usually the site address plus <code>/sitemap.xml</code>. WordPress sites use
+            <code>/wp-sitemap.xml</code>, or <code>/sitemap_index.xml</code> with Yoast SEO.
+          </span>
           <span id="url-error" class="url-error" role="alert" aria-hidden="true">
             Please enter a valid URL starting with https:// or http://
           </span>
@@ -562,6 +615,24 @@
             <label for="tool-wave">
               WAVE API
               <span class="label-hint">Visual accessibility categories from WebAIM &mdash; requires WAVE_API_KEY in a11y_agent.env</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset id="sampling-group" hidden>
+          <legend>Where to run WAVE and Lighthouse</legend>
+          <div class="check-item">
+            <input type="radio" id="sample-type" name="sampling" value="1" checked />
+            <label for="sample-type">
+              One page of each type
+              <span class="label-hint">axe still checks every page. Saves WAVE credits.</span>
+            </label>
+          </div>
+          <div class="check-item">
+            <input type="radio" id="sample-all" name="sampling" value="0" />
+            <label for="sample-all">
+              Every page
+              <span class="label-hint">Uses WAVE credits for every page in the sitemap.</span>
             </label>
           </div>
         </fieldset>
@@ -599,7 +670,7 @@
       <div class="dialog-footer">
         <button type="button" class="btn btn-export" id="btn-export" hidden>Export PDF</button>
         <button type="button" class="btn btn-secondary" id="btn-cancel">Cancel</button>
-        <button type="button" class="btn btn-primary" id="btn-run">Run Audit</button>
+        <button type="button" class="btn btn-primary" id="btn-run">Audit page</button>
       </div>
 
       <!-- Print-only report header (hidden on screen) -->
@@ -627,6 +698,14 @@
         <h2 class="results-heading" id="results-heading">Results</h2>
         <p class="results-url"><strong>Scanned:</strong> <span id="results-url-display"></span></p>
 
+        <div id="results-site" hidden>
+          <p class="site-progress-text" id="site-progress-text">Starting&hellip;</p>
+          <progress class="site-progress" id="site-progress" value="0" max="1"
+                    aria-labelledby="site-progress-text"></progress>
+          <p class="site-warning" id="site-warning" hidden></p>
+          <div id="site-report"></div>
+        </div>
+
         <div id="results-axe" class="tool-result" hidden>
           <h3 class="tool-result-heading">axe-core</h3>
           <div id="results-axe-content"></div>
@@ -649,7 +728,8 @@
   <div aria-live="polite" aria-atomic="true" class="sr-only" id="status"></div>
 
   <script>
-    const AUDIT_URL = 'http://127.0.0.1:5001/audit';
+    const SERVER    = 'http://127.0.0.1:5001';
+    const AUDIT_URL = `${SERVER}/audit`;
 
     const toolCheckboxes = document.querySelectorAll('input[name="tools"]');
     const runBtn    = document.getElementById('btn-run');
@@ -703,7 +783,152 @@
     }
 
     function updateRunButton() {
-      runBtn.disabled = ![...toolCheckboxes].some(cb => cb.checked);
+      runBtn.disabled = Boolean(siteRunId) || ![...toolCheckboxes].some(cb => cb.checked);
+    }
+
+    // ── Whole-site mode ─────────────────────────────
+    const modeRadios    = document.querySelectorAll('input[name="mode"]');
+    const urlLabel      = document.getElementById('url-label');
+    const urlHint       = document.getElementById('url-hint');
+    const samplingGroup = document.getElementById('sampling-group');
+    const siteBlock     = document.getElementById('results-site');
+    const siteText      = document.getElementById('site-progress-text');
+    const siteBar       = document.getElementById('site-progress');
+    const siteWarning   = document.getElementById('site-warning');
+    const siteReport    = document.getElementById('site-report');
+    let siteRunId = null, pollTimer = null, lastAnnounced = -1;
+
+    const siteMode = () => document.getElementById('mode-site').checked;
+    const pages = n => `${n} page${n === 1 ? '' : 's'}`;
+    const kinds = n => `${n} kind${n === 1 ? '' : 's'} of issue`;
+    const idleLabel = () => (siteMode() ? 'Audit site' : 'Audit page');
+
+    function applyMode() {
+      const site = siteMode();
+      urlLabel.textContent = site ? 'Sitemap URL' : 'Page URL to audit';
+      urlInput.placeholder = site ? 'https://www.example.com/sitemap.xml' : 'https://www.example.com/';
+      urlHint.hidden = !site;
+      samplingGroup.hidden = !site;
+      if (!siteRunId) runBtn.textContent = idleLabel();
+    }
+    modeRadios.forEach(r => r.addEventListener('change', applyMode));
+
+    async function api(path, options) {
+      const resp = await fetch(`${SERVER}${path}`, options);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error || `Server error ${resp.status}`);
+      return data;
+    }
+
+    function finishSiteRun() {
+      clearInterval(pollTimer);
+      pollTimer = null;
+      siteRunId = null;
+      cancelBtn.textContent = 'Cancel';
+      runBtn.textContent = idleLabel();
+      updateRunButton();
+    }
+
+    function showProgress(st) {
+      const total = st.pages_total || 0, done = st.pages_done || 0;
+      siteBar.max = Math.max(total, 1);
+      siteBar.value = done;
+      siteText.textContent = `Checked ${done} of ${pages(total)}.`;
+      const quarter = total ? Math.floor((done / total) * 4) : 0;
+      if (quarter > lastAnnounced && quarter < 4) {
+        lastAnnounced = quarter;
+        status.textContent = `Checked ${done} of ${pages(total)}.`;
+      }
+    }
+
+    function renderSiteReport(rep) {
+      const words = { finished: 'Finished.', stopped: 'Stopped before the end.',
+                      paused: 'Paused: the site started blocking requests.', failed: 'The audit failed.',
+                      interrupted: 'Interrupted before the end.' };
+      siteText.textContent = `${words[rep.state] || rep.state} Checked ${rep.pages_done} of ${pages(rep.pages_total)}.`;
+      const rows = (rep.top_issues || []).map(i => `
+        <tr><td>${escHtml(i.tool)}</td><td>${escHtml(i.description || i.rule)}<br><code>${escHtml(i.rule)}</code></td>
+        <td>${escHtml(i.severity)}</td><td>${escHtml(i.wcag || '')}</td>
+        <td class="num">${i.pages_affected}</td><td class="num">${i.instances}</td></tr>`).join('');
+      const types = Object.entries(rep.templates || {}).map(([name, t]) => `
+        <tr><td>${escHtml(name)}</td><td class="num">${t.pages}</td>
+        <td class="num">${t.pages_with_axe_violations}</td><td class="num">${t.pages_with_errors}</td></tr>`).join('');
+      const files = rep.files || {};
+      siteReport.innerHTML = `
+        <p class="site-summary">Found ${kinds(rep.unique_issues)} across ${pages(rep.pages_done)}.
+          ${rep.detail ? escHtml(rep.detail) : ''}</p>
+        ${rows ? `<table class="site-table"><caption>Most common issues</caption>
+          <thead><tr><th scope="col">Tool</th><th scope="col">Issue</th><th scope="col">Severity</th>
+          <th scope="col">WCAG</th><th scope="col" class="num">Pages</th><th scope="col" class="num">Instances</th></tr></thead>
+          <tbody>${rows}</tbody></table>` : '<p class="results-pass">&#10003; No issues reported by the automated tools.</p>'}
+        ${types ? `<table class="site-table"><caption>Pages by type</caption>
+          <thead><tr><th scope="col">Page type</th><th scope="col" class="num">Pages</th>
+          <th scope="col" class="num">With axe violations</th><th scope="col" class="num">Failed to load</th></tr></thead>
+          <tbody>${types}</tbody></table>` : ''}
+        <p class="site-files"><strong>Full results on this computer:</strong><br>
+          ${Object.values(files).map(f => `<code>${escHtml(f)}</code>`).join('<br>')}</p>
+        <p class="site-note">${escHtml(rep.note || '')}</p>`;
+      status.textContent = `Site audit ${rep.state}. Found ${kinds(rep.unique_issues)} across ${pages(rep.pages_done)}. Results are below.`;
+      exportBtn.hidden = false;
+    }
+
+    async function pollSite() {
+      if (!siteRunId) return;
+      try {
+        const st = await api(`/batch/${encodeURIComponent(siteRunId)}`);
+        showProgress(st);
+        if (st.state !== 'running') {
+          const id = siteRunId;
+          finishSiteRun();
+          renderSiteReport(await api(`/batch/${encodeURIComponent(id)}/report?top=25`));
+        }
+      } catch (err) {
+        finishSiteRun();
+        siteText.textContent = `Lost contact with the audit server: ${err.message}`;
+        status.textContent = 'Site audit status unavailable.';
+      }
+    }
+
+    async function runSite(sitemapUrl, tools) {
+      ['axe', 'lighthouse', 'wave'].forEach(t => { document.getElementById(`results-${t}`).hidden = true; });
+      siteBlock.hidden = false;
+      siteReport.innerHTML = '';
+      siteWarning.hidden = true;
+      siteBar.value = 0;
+      siteBar.max = 1;
+      lastAnnounced = -1;
+      siteText.textContent = 'Reading the sitemap…';
+      status.textContent = `Reading the sitemap at ${sitemapUrl}`;
+      const sampled = Number(document.querySelector('input[name="sampling"]:checked').value);
+      try {
+        const st = await api('/batch', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sitemap_url: sitemapUrl, tools, sampled_per_template: sampled }),
+        });
+        siteRunId = st.run_id;
+        if (st.wave_credit_warning) {
+          siteWarning.textContent = st.wave_credit_warning;
+          siteWarning.hidden = false;
+        }
+        const waveCount = (st.planned_requests || {}).wave;
+        status.textContent = `Auditing ${pages(st.pages_total)}` +
+          (waveCount !== undefined ? `, with WAVE on ${waveCount} of them.` : '.') +
+          (st.wave_credit_warning ? ` Warning: ${st.wave_credit_warning}` : '');
+        lastAnnounced = 0;  // keep the start announcement; progress is announced from 25%
+        showProgress(st);
+        runBtn.textContent = 'Auditing…';
+        runBtn.disabled = true;
+        cancelBtn.textContent = 'Stop audit';
+        pollTimer = setInterval(pollSite, 3000);
+      } catch (err) {
+        const reason = err instanceof TypeError
+          ? `Could not reach the audit server at ${SERVER}. Make sure audit_server.py is running: python3 audit_server.py`
+          : err.message;
+        siteText.textContent = '';
+        siteReport.innerHTML = `<p class="results-error">${escHtml(reason)}</p>`;
+        status.textContent = 'Site audit could not start. See the message below.';
+        finishSiteRun();
+      }
     }
 
     toolCheckboxes.forEach(cb => cb.addEventListener('change', updateRunButton));
@@ -799,6 +1024,7 @@
       setUrlValid(true);
 
       const selectedTools = [...toolCheckboxes].filter(cb => cb.checked).map(cb => cb.value);
+      siteBlock.hidden = true;
 
       document.getElementById('results-url-display').textContent = targetUrl;
       document.getElementById('print-date').textContent = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -829,6 +1055,7 @@
 
       resultsSection.hidden = false;
       exportBtn.hidden = true;
+      if (siteMode()) { await runSite(targetUrl, selectedTools); return; }
       runBtn.textContent = 'Running…';
       runBtn.disabled = true;
       status.textContent = `Running ${selectedTools.join(', ')} audit on ${targetUrl}`;
@@ -852,18 +1079,26 @@
         });
         status.textContent = 'Audit failed. See error messages below.';
       } finally {
-        runBtn.textContent = 'Run Audit';
+        runBtn.textContent = idleLabel();
         updateRunButton();
       }
     });
 
     exportBtn.addEventListener('click', () => { window.print(); });
 
-    cancelBtn.addEventListener('click', () => { status.textContent = 'Audit cancelled.'; });
+    cancelBtn.addEventListener('click', async () => {
+      if (!siteRunId) { status.textContent = 'Audit cancelled.'; return; }
+      cancelBtn.disabled = true;
+      status.textContent = 'Stopping after the current page…';
+      try { await api(`/batch/${encodeURIComponent(siteRunId)}/stop`, { method: 'POST' }); }
+      catch { /* the next status check reports the result */ }
+      finally { cancelBtn.disabled = false; pollSite(); }
+    });
 
     const dialog = document.querySelector('[role="dialog"]');
     const focusable = () =>
-      [...dialog.querySelectorAll('button, input, a[href], [tabindex]:not([tabindex="-1"])')].filter(el => !el.disabled);
+      [...dialog.querySelectorAll('button, input, summary, a[href], [tabindex]:not([tabindex="-1"])')]
+        .filter(el => !el.disabled && el.offsetParent !== null && !(el.type === 'radio' && !el.checked));
 
     dialog.addEventListener('keydown', e => {
       if (e.key !== 'Tab') return;

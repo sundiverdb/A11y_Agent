@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from mcp.server.mcpserver import MCPServer  # noqa: E402
 
 import act  # noqa: E402
+import wave_credits  # noqa: E402
 from batch import (  # noqa: E402
     BatchManager, default_runners, expand_sitemap, validate_tools, validate_url,
 )
@@ -26,7 +27,8 @@ server = MCPServer(
         "Automated accessibility audits with axe-core, WAVE and Lighthouse. Use audit_url for "
         "one page. For many pages use start_batch_audit, then poll get_batch_status and read "
         "get_batch_report. WAVE uses paid credits, so keep its per-template sampling unless "
-        "the user asks otherwise. Automated results cover only part of WCAG: never present a "
+        "the user asks otherwise; check_wave_credits shows the balance. Automated results "
+        "cover only part of WCAG: never present a "
         "clean result as conformance. For the checks automation misses, use list_access_topics "
         "and get_access_consideration (Microsoft's Accessibility Considerations Toolkit) to plan "
         "manual and assistive-technology checks; follow the safeguards they return, and report "
@@ -66,7 +68,35 @@ async def start_batch_audit(
     page_urls = list(urls or [])
     if sitemap_url:
         page_urls += await asyncio.to_thread(expand_sitemap, sitemap_url)
-    return manager.create(page_urls, tools or ["axe"], delay_seconds, sampled_tools_per_template)
+    result = manager.create(page_urls, tools or ["axe"], delay_seconds, sampled_tools_per_template)
+    warning = wave_credits.budget_warning(result.get("planned_requests", {}).get("wave", 0))
+    if warning:
+        result["wave_credit_warning"] = warning
+    return result
+
+
+@server.tool()
+async def check_wave_credits(live: bool = False) -> dict[str, Any]:
+    """Show the WAVE API credit balance.
+
+    By default this returns the balance saved from the last WAVE request, which costs nothing.
+    WAVE has no free balance check, so live=True makes a small WAVE request (reporttype 1 on
+    https://example.com), which uses credits. Ask the user before passing live=True.
+    """
+    if live:
+        from auditors.wave_runner import run_wave
+
+        response = await asyncio.to_thread(run_wave, "https://example.com", "1")
+        if "error" in response:
+            return {"error": response["error"], "last_known": wave_credits.load()}
+    state = wave_credits.load()
+    if state is None:
+        return {"credits_remaining": None,
+                "note": "No WAVE request has been saved yet. Run any WAVE audit, or call "
+                        "this tool with live=True (uses credits)."}
+    return {**state, "source": "live check" if live else "saved from the last WAVE request",
+            "note": "credits_per_request is estimated from the change between the last two "
+                    "WAVE requests."}
 
 
 @server.tool()

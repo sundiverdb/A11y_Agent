@@ -25,7 +25,7 @@ This file provides context and conventions for AI assistants (Claude Code and ot
 ```
 A11y_Agent/
 ├── CLAUDE.md              # This file — project conventions for AI assistants
-├── dialog.html            # Main browser UI (accessible dialog, WAVE API results)
+├── a11yagent.html            # Main browser UI (accessible dialog, WAVE API results)
 ├── proxy.py               # Local HTTP proxy that forwards requests to the WAVE API
 ├── a11y_agent.env         # Environment variables — contains WAVE_API_KEY
 │                          # WARNING: This file is tracked by git (see Security note below)
@@ -43,7 +43,7 @@ A11y_Agent/
 ├── .env.example               # Env var template (not yet created)
 ├── pyproject.toml             # Python project config — deps, build, linting (not yet created)
 │
-├── dialog.html                # Browser UI
+├── a11yagent.html                # Browser UI
 ├── proxy.py                   # WAVE API proxy
 ├── a11y_agent.env             # Secrets — never commit new keys here; migrate to .env
 │
@@ -72,7 +72,7 @@ A11y_Agent/
 
 ## Existing Components
 
-### `dialog.html` — Browser UI (659 lines)
+### `a11yagent.html` — Browser UI (659 lines)
 
 The primary user-facing interface. A fully self-contained accessible dialog rendered in the browser.
 
@@ -102,7 +102,7 @@ The primary user-facing interface. A fully self-contained accessible dialog rend
 
 ### `proxy.py` — WAVE API Proxy (123 lines)
 
-A minimal, zero-dependency local HTTP server that proxies WAVE API requests, adding the API key and CORS headers so `dialog.html` can call it from a `file://` or `localhost` origin.
+A minimal, zero-dependency local HTTP server that proxies WAVE API requests, adding the API key and CORS headers so `a11yagent.html` can call it from a `file://` or `localhost` origin.
 
 **Key details:**
 - Listens on `http://127.0.0.1:5000`
@@ -139,7 +139,7 @@ python proxy.py
 ### Prerequisites
 
 - Python 3.11+ (for `proxy.py` — no external packages required)
-- A modern browser (for `dialog.html`)
+- A modern browser (for `a11yagent.html`)
 - A [WebAIM WAVE API key](https://wave.webaim.org/api/) — set `WAVE_API_KEY` in `a11y_agent.env`
 
 ### Running the Current Prototype
@@ -157,9 +157,9 @@ python proxy.py
 # Output: Proxy listening on http://127.0.0.1:5000  —  Ctrl-C to stop.
 
 # 4. Open the UI in a browser
-open dialog.html       # macOS
-xdg-open dialog.html   # Linux
-# Or double-click dialog.html in your file manager
+open a11yagent.html       # macOS
+xdg-open a11yagent.html   # Linux
+# Or double-click a11yagent.html in your file manager
 ```
 
 ### Planned Python Package Setup (not yet implemented)
@@ -240,7 +240,7 @@ The WAVE API is used as the primary accessibility scanner:
 - Endpoint: `https://wave.webaim.org/api/request`
 - Report type `2` returns structured JSON with category counts and detailed items
 - The proxy (`proxy.py`) handles API key injection and CORS bridging
-- Raw WAVE output is rendered directly in `dialog.html`; no normalization layer exists yet
+- Raw WAVE output is rendered directly in `a11yagent.html`; no normalization layer exists yet
 
 **Planned evolution:** When the LLM backend is added, raw WAVE output will be normalized into a shared `Finding` schema before being processed by Claude.
 
@@ -288,7 +288,7 @@ If `WAVE_API_KEY` is missing, the proxy starts but returns a 500 error on all `/
 
 ### Opening the UI
 
-Open `dialog.html` directly in a browser. The proxy must be running first.
+Open `a11yagent.html` directly in a browser. The proxy must be running first.
 
 ### Running Linting (once tooling is configured)
 
@@ -320,7 +320,7 @@ echo "WAVE_API_KEY=<new-key>" > a11y_agent.env
 3. **No secrets in code.** Never hardcode API keys, tokens, or credentials. Always use environment variables.
 4. **Update this file.** If you add new modules, change the architecture, or establish a new convention, update `CLAUDE.md` accordingly.
 5. **Test your changes.** Run the test suite after every non-trivial change. Do not mark tasks complete if tests fail.
-6. **Accessibility-first.** When generating HTML/CSS/JS output or examples, always ensure they meet WCAG 2.1 AA minimum. The existing `dialog.html` is the reference implementation.
+6. **Accessibility-first.** When generating HTML/CSS/JS output or examples, always ensure they meet WCAG 2.1 AA minimum. The existing `a11yagent.html` is the reference implementation.
 7. **Conventional commits.** Write commit messages in the format `type(scope): description`.
 8. **Branch discipline.** Develop on the designated feature branch. Never push to `main` directly.
 9. **Structured outputs preferred.** When the agent needs to return data, use tool use or JSON mode — avoid free-text parsing.

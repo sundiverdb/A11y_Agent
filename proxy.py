@@ -6,7 +6,7 @@ Usage:
 
 Reads WAVE_API_KEY from a11y_agent.env (same directory as this script),
 then serves GET /check?url=<url> by forwarding the request to the WAVE API
-and returning the JSON response. CORS headers are set so dialog.html can
+and returning the JSON response. CORS headers are set so a11yagent.html can
 call this server from a file:// or localhost origin.
 """
 

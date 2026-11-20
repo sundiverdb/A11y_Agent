@@ -6,11 +6,15 @@ from __future__ import annotations
 import json
 import os
 import ssl
+import sys
 import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import wave_credits  # noqa: E402
 
 # Mac Python (from python.org) ships without system SSL certs.
 # Use certifi's bundle if available, otherwise fall back to default context.
@@ -42,8 +46,8 @@ _env = _load_env_file(Path(__file__).parent.parent / "a11y_agent.env")
 WAVE_API_KEY: str = _env.get("WAVE_API_KEY") or os.environ.get("WAVE_API_KEY", "")
 
 
-def run_wave(url: str) -> dict[str, Any]:
-    """Call the WAVE API with reporttype=2 and return the JSON response."""
+def run_wave(url: str, reporttype: str = "2") -> dict[str, Any]:
+    """Call the WAVE API and return the JSON response, saving the credit balance it reports."""
     if not WAVE_API_KEY:
         return {
             "error": (
@@ -52,12 +56,17 @@ def run_wave(url: str) -> dict[str, Any]:
             )
         }
 
-    query = urllib.parse.urlencode({"key": WAVE_API_KEY, "url": url, "reporttype": "2"})
+    query = urllib.parse.urlencode({"key": WAVE_API_KEY, "url": url, "reporttype": reporttype})
     wave_url = f"{WAVE_ENDPOINT}?{query}"
 
     try:
         with urllib.request.urlopen(wave_url, timeout=30, context=_SSL_CTX) as resp:
-            return json.loads(resp.read())
+            data = json.loads(resp.read())
+        try:
+            wave_credits.record(data, url, update_cost=reporttype == "2")
+        except OSError:
+            pass  # never lose audit results over the credit log
+        return data
     except urllib.error.HTTPError as exc:
         return {"error": f"WAVE API HTTP {exc.code}: {exc.reason}"}
     except urllib.error.URLError as exc:

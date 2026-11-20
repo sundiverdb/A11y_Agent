@@ -6,7 +6,7 @@ from urllib.parse import urlsplit
 
 
 def origin_allowed(origin: str | None) -> bool:
-    """Allow non-browser clients, dialog.html opened from a file, and localhost pages."""
+    """Allow non-browser clients, a11yagent.html opened from a file, and localhost pages."""
     if origin is None or origin == "null":
         return True
     parts = urlsplit(origin)

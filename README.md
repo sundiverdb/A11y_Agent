@@ -1,6 +1,6 @@
 # A11y Agent
 
-Audits web pages with axe-core, WAVE and Lighthouse. It works from a browser UI (`dialog.html`) or as an MCP server for Claude and other MCP clients.
+Audits web pages with axe-core, WAVE and Lighthouse. It works from a browser UI (`a11yagent.html`) or as an MCP server for Claude and other MCP clients.
 
 Automated tools catch only part of WCAG. A clean result does not show conformance, and these tools don't exercise menus, dialogs or checkout flows.
 
@@ -41,6 +41,7 @@ Add this to your MCP client's settings. In the Claude desktop app that file is `
 | `stop_batch_audit` | Stops after the current page |
 | `resume_batch_audit` | Continues a run, skipping saved pages |
 | `list_batch_audits` | Lists saved runs |
+| `check_wave_credits` | Shows the WAVE credit balance saved from the last WAVE request (free); `live=True` makes a small paid WAVE request to refresh it |
 | `list_access_topics` | Lists the access topics from Microsoft's Accessibility Considerations Toolkit |
 | `get_access_consideration` | Returns one topic's checklist, assistive-tech models and test strategies, with required safeguards |
 | `get_evaluation_guide` | Returns a methodology or heuristics document, such as the severity scale |
@@ -55,6 +56,20 @@ voice and cognitive checks, organized by EN 301 549. They read a pinned copy of
 [Microsoft's toolkit](https://github.com/microsoft/Microsoft-Accessibility/tree/main/Accessibility-Considerations-Toolkit)
 in `vendor/ms-act/`, so they work offline and don't change unless you update the copy.
 See `vendor/ms-act/VENDORED.md` for the pinned commit, licenses and update steps.
+
+## Use the browser page
+
+1. Double-click `Start A11y Agent.command` in Finder. It starts the local server and opens
+   `a11yagent.html`; close its Terminal window to stop the server. (Or run
+   `.venv/bin/python audit_server.py` and open the page yourself.)
+2. Choose **One page** and enter a page address, or **A whole site** and enter its sitemap
+   (usually `/sitemap.xml`; WordPress uses `/wp-sitemap.xml`, or `/sitemap_index.xml` with Yoast SEO).
+3. For a whole site, choose where WAVE and Lighthouse run. **One page of each type** keeps WAVE
+   credit use low; axe still checks every page.
+
+Site audits use the same engine as the MCP batch tools: results are saved under
+`~/.a11y_agent/runs/`, the page shows progress and a summary, and **Stop audit** ends the run
+after the current page.
 
 ## Batch behavior
 
