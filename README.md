@@ -84,3 +84,12 @@ after the current page.
 .venv/bin/pip install pytest
 .venv/bin/python -m pytest tests/
 ```
+
+## License
+
+A11y Agent is released under the [MIT License](LICENSE). Anyone may fork, use and adapt it,
+including in commercial work, as long as the copyright and license notice stay with the code.
+
+The vendored Microsoft Accessibility Considerations Toolkit in `vendor/ms-act/` keeps its own
+license: MIT from Microsoft, plus W3C document license terms for the WCAG and cognitive
+accessibility material it adapts. See `vendor/ms-act/VENDORED.md` for details.
