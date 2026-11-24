@@ -39,7 +39,8 @@ The following structure is the planned target as the project grows. Keep this se
 ```
 A11y_Agent/
 ├── CLAUDE.md
-├── README.md                  # User-facing documentation (not yet created)
+├── README.md                  # User-facing documentation (English)
+├── README.fr.md               # French translation; keep it in sync with README.md
 ├── .env.example               # Env var template (not yet created)
 ├── pyproject.toml             # Python project config — deps, build, linting (not yet created)
 │
