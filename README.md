@@ -1,5 +1,7 @@
 # A11y Agent
 
+**English** | [Français](README.fr.md)
+
 Audits web pages with axe-core, WAVE and Lighthouse. It works from a browser UI (`a11yagent.html`) or as an MCP server for Claude and other MCP clients.
 
 Automated tools catch only part of WCAG. A clean result does not show conformance, and these tools don't exercise menus, dialogs or checkout flows.
